@@ -9,13 +9,14 @@ Future main() async {
     4040,
   );
 
-  final cpuCores = 4;
+  final cpuCores = Platform.numberOfProcessors;
   final isolatePorts = List<SendPort>(cpuCores);
   var roundRobin = -1;
 
   for (var i = 0; i < cpuCores; i++) {
     final receivePort = ReceivePort();
-    await Isolate.spawn(echo, IsolateData(receivePort.sendPort, 'isolate $i'));
+    await Isolate.spawn(
+        handler, IsolateData(receivePort.sendPort, 'isolate $i'));
     isolatePorts[i] = await receivePort.first;
   }
 
@@ -35,7 +36,7 @@ Future send(SendPort port, msg) {
   return response.first;
 }
 
-Future<void> echo(IsolateData isolateData) async {
+Future<void> handler(IsolateData isolateData) async {
   final port = ReceivePort();
   isolateData.port.send(port.sendPort);
 
